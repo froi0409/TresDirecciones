@@ -1,0 +1,56 @@
+package com.froi.tresdirecciones.gramatica;
+
+import java_cup.runtime.*;
+
+
+class ParserP;
+
+parser code {:
+
+    int cant = 0;
+
+    public ParserP(LexerP lexer) {
+        super(lexer);
+    }
+    public void report_error(String message, Object info) {
+        System.out.println("reporterror");
+    }
+    public void report_fatal_error(String message, Object info) {
+        System.out.println("reportfatal");
+    }
+    public void syntax_error(Symbol cur_token) {
+        System.out.println("syntaxerr " + symbl_name_from_id(cur_token.sym) + " " + cur_token.left + " - " + cur_token.right);
+        System.out.println("Revise que su expresión sea de la forma: x = /*Expresion numerica*/");
+    }
+    protected int error_sync_size() {
+        return 1;
+    }
+
+:}
+
+/*Declaracion de simbolos terminales*/
+terminal SUMA, RESTA, MULTIPLICACION, DIVISION, NUMERO, ALFANUMERICO, IGUAL, PARA, PARC;
+
+/*Declaración de Simbolos no terminales*/
+non terminal ini;
+non terminal String inicio, valor;
+
+/*precedencia*/
+precedence left SUMA, RESTA;
+precedence left MULTIPLICACION, DIVISION;
+
+start with ini;
+
+ini ::= ALFANUMERICO IGUAL inicio;
+
+inicio ::=  inicio:val1      SUMA        inicio:val2          {:cant++; System.out.println("t" + cant + ": " + val1 + "+" + val2); RESULT = "t" + cant;:}
+            | inicio:val1    RESTA       inicio:val2          {:cant++; System.out.println("t" + cant + ": " + val1 + "-" + val2); RESULT = "t" + cant;:}
+            | inicio:val1    MULTIPLICACION  inicio:val2      {:cant++; System.out.println("t" + cant + ": " + val1 + "*" + val2); RESULT = "t" + cant;:}
+            | inicio:val1    DIVISION        inicio:val2      {:cant++; System.out.println("t" + cant + ": " + val1 + "/" + val2); RESULT = "t" + cant;:}
+            | PARA inicio:val PARC                            {:RESULT = val;:}
+            | valor:val                                       {:RESULT = val;:}
+            ;
+
+valor ::=   ALFANUMERICO:val    {:RESULT = val.toString();:}
+            | NUMERO:val        {:RESULT = val.toString();:}
+            ;
